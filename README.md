@@ -66,7 +66,7 @@ Déploiement d'un service web réparti pour tester l'équilibrage de charge nati
 * L'accès au port 80 retourne l'ID du conteneur. En rafraîchissant la page, l'ID change, prouvant la répartition du trafic.
 </details>
 
-![LoadBalancing Result](./test_d'équilibrage_de_charge.png)
+![LoadBalancing Result](./loadbalancing_test.png)
 
 ---
 
