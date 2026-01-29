@@ -1,1 +1,119 @@
-# TP-Docker-Swarm
+# 🐳 Compte-Rendu TP Docker Swarm - Orchestration de Cluster
+
+![Status](https://img.shields.io/badge/Status-Completed-success)
+![Docker](https://img.shields.io/badge/Docker-27.3.1-blue)
+![Nodes](https://img.shields.io/badge/Nodes-4-orange)
+
+Ce projet documente la mise en place d'un cluster orchestré avec Docker Swarm. [cite_start]L'infrastructure est composée de 4 instances Linux simulant un environnement de production distribué[cite: 279, 288].
+
+## 📋 Guide Technique Pas à Pas
+
+### 1️⃣ Mise en place du Cluster (Exercice 1)
+[cite_start]L'objectif est d'initialiser le mode Swarm sur le manager et de fédérer les 3 workers pour former le cluster[cite: 287, 288].
+
+<details>
+<summary>💻 Voir les commandes terminal</summary>
+
+**Sur le Node 1 (Manager) :**
+* Initialisation du cluster :
+    ```bash
+    docker swarm init --advertise-addr 192.168.0.34
+    ```
+   
+* Vérification de l'état du cluster :
+    ```bash
+    docker node ls
+    ```
+   
+
+**Sur les Nodes 2, 3 et 4 (Workers) :**
+* Rejoindre le cluster en tant que worker :
+    ```bash
+    docker swarm join --token SWMTKN-1-2gbhjxsj7srmi5xai5394xpx54k7up5ehea9zjs7eyo661156r-a3ymiokyly9ae9xf316ml8a8p 192.168.0.34:2377
+    ```
+   
+</details>
+
+
+
+---
+
+### 2️⃣ Réplication & Visualisation (Exercice 2)
+[cite_start]Mise en place d'un outil de monitoring graphique et test de la haute disponibilité (self-healing)[cite: 301, 302, 312].
+
+<details>
+<summary>💻 Voir les commandes terminal</summary>
+
+**Sur le Node 1 :**
+* Lancer le Visualizer en mode standalone sur le port 8080 :
+    ```bash
+    docker run -d -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock dockersamples/visualizer
+    ```
+   
+* Créer un service de 2 réplicas (image alpine) :
+    ```bash
+    docker service create --name pingpong --replicas 2 -d alpine ping -c 5 perdu.com
+    ```
+   
+</details>
+
+---
+
+### 3️⃣ Load Balancing (Exercice 3)
+[cite_start]Déploiement d'un service web réparti pour tester l'équilibrage de charge natif via le port 80[cite: 317, 318, 319].
+
+<details>
+<summary>💻 Voir les commandes terminal</summary>
+
+**Sur le Node 1 :**
+* Déploiement du service `loadb` avec 4 réplicas :
+    ```bash
+    docker service create --name loadb --replicas 4 -p 80:80 flointech/hello-name
+    ```
+   
+
+**Vérification :**
+* L'accès au port 80 retourne l'ID du conteneur. En rafraîchissant la page, l'ID change, prouvant la répartition du trafic.
+</details>
+
+---
+
+### 4️⃣ Registry Privé & Déploiement Local (Exercice 4)
+[cite_start]Configuration d'un magasin d'images interne pour sécuriser et centraliser les déploiements[cite: 332, 333, 334].
+
+<details>
+<summary>💻 Voir les commandes terminal</summary>
+
+**Sur CHAQUE Node (1, 2, 3, 4) :**
+* Configurer les `insecure-registries` dans `/etc/docker/daemon.json` :
+    ```json
+    { "insecure-registries": ["127.0.0.1", "192.168.0.34:5000"] }
+    ```
+   
+* Recharger la configuration : `kill -HUP $(pidof dockerd)`
+
+**Sur le Node 1 (Push et Création) :**
+* Pousser l'image vers le registry local :
+    ```bash
+    docker pull alpine
+    docker tag alpine 192.168.0.34:5000/mon-image
+    docker push 192.168.0.34:5000/mon-image
+    ```
+   
+* Créer le service final à partir de l'image privée :
+    ```bash
+    docker service create --name service-prive --replicas 4 192.168.0.34:5000/mon-image ping 8.8.8.8
+    ```
+   
+</details>
+
+---
+
+## 🖼️ Résultat Final
+Vue d'ensemble du cluster via le **Visualizer** montrant la coexistence et la répartition des services `pingpong`, `loadb` et `service-prive` sur les 4 nœuds.
+
+![Visualizer Final](./image_e45579.jpg)
+
+
+## 🏁 Conclusion
+[cite_start]Ce TP a validé les capacités de Docker Swarm en termes de **haute disponibilité**, de **load balancing** automatique (Routing Mesh) et de gestion de **registre privé**[cite: 353, 354, 355, 356, 357, 358].
