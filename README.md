@@ -46,7 +46,7 @@ Mise en place d'un outil de monitoring graphique et test de la haute disponibili
     ```
 </details>
 
-![PingPong Replicas](./visualiseur_pingpong.png)
+![PingPong Replicas](./visualizer_pingpong.png)
 
 ---
 
